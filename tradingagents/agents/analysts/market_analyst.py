@@ -1,6 +1,8 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import create_react_agent, AgentExecutor
 from langchain import hub
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import time
 import json
 
@@ -42,7 +44,8 @@ def create_market_analyst_react(llm, toolkit):
                             from tradingagents.dataflows.optimized_china_data import get_china_stock_data_cached
                             return get_china_stock_data_cached(
                                 symbol=ticker,
-                                start_date='2025-05-28',
+                                # start_date='2025-05-28',
+                                start_date= (datetime.strptime(current_date, '%Y-%m-%d').date() - relativedelta(day=40)).strftime('%Y-%m-%d'),
                                 end_date=current_date,
                                 force_refresh=False
                             )

@@ -362,8 +362,9 @@ class TongDaXinDataProvider:
             indicators['MA5'] = df['Close'].rolling(5).mean().iloc[-1] if len(df) >= 5 else None
             indicators['MA10'] = df['Close'].rolling(10).mean().iloc[-1] if len(df) >= 10 else None
             indicators['MA20'] = df['Close'].rolling(20).mean().iloc[-1] if len(df) >= 20 else None
-            
-            # RSI
+            indicators['MA30'] = df['Close'].rolling(30).mean().iloc[-1] if len(df['Close']) >= 20 else None
+
+        # RSI
             if len(df) >= 14:
                 delta = df['Close'].diff()
                 gain = (delta.where(delta > 0, 0)).rolling(14).mean()
@@ -710,11 +711,12 @@ def get_china_stock_data(stock_code: str, start_date: str, end_date: str) -> str
 - MA5: ¥{indicators.get('MA5', 0):.2f}
 - MA10: ¥{indicators.get('MA10', 0):.2f}
 - MA20: ¥{indicators.get('MA20', 0):.2f}
+- MA30: ¥{indicators.get('MA30', 0):.2f}
 - RSI: {indicators.get('RSI', 0):.2f}
 - MACD: {indicators.get('MACD', 0):.4f}
 
-## 📋 最近5日数据
-{df.tail().to_string()}
+## 📋 最近40日数据
+{df.tail(40).to_string()}
 
 数据来源: 通达信API (实时数据)
 """

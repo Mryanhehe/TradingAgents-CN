@@ -13,7 +13,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 try:
-    from .mongodb_storage import MongoDBStorage
+    from tradingagents.config.mongodb_storage import MongoDBStorage
     MONGODB_AVAILABLE = True
 except ImportError:
     MONGODB_AVAILABLE = False

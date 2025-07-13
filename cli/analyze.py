@@ -107,7 +107,7 @@ class MessageBuffer:
             if content is not None:
                 latest_section = section
                 latest_content = content
-               
+
         if latest_section and latest_content:
             # Format the current section for display
             section_titles = {
@@ -131,13 +131,13 @@ class MessageBuffer:
 
         # Analyst Team Reports
         if any(
-            self.report_sections[section]
-            for section in [
-                "market_report",
-                "sentiment_report",
-                "news_report",
-                "fundamentals_report",
-            ]
+                self.report_sections[section]
+                for section in [
+                    "market_report",
+                    "sentiment_report",
+                    "news_report",
+                    "fundamentals_report",
+                ]
         ):
             report_parts.append("## Analyst Team Reports")
             if self.report_sections["market_report"]:
@@ -321,7 +321,7 @@ def update_display(layout, spinner_text=None):
             content_str = ' '.join(text_parts)
         elif not isinstance(content_str, str):
             content_str = str(content)
-            
+
         # Truncate message content if too long
         if len(content_str) > 200:
             content_str = content_str[:197] + "..."
@@ -409,26 +409,6 @@ def get_user_selections():
     except FileNotFoundError:
         welcome_ascii = "TradingAgents"
 
-    # Create welcome box content
-    welcome_content = f"{welcome_ascii}\n"
-    welcome_content += "[bold green]TradingAgents: 多智能体大语言模型金融交易框架 - CLI[/bold green]\n"
-    welcome_content += "[bold green]Multi-Agents LLM Financial Trading Framework - CLI[/bold green]\n\n"
-    welcome_content += "[bold]工作流程 | Workflow Steps:[/bold]\n"
-    welcome_content += "I. 分析师团队 | Analyst Team → II. 研究团队 | Research Team → III. 交易员 | Trader → IV. 风险管理 | Risk Management → V. 投资组合管理 | Portfolio Management\n\n"
-    welcome_content += (
-        "[dim]Built by [Tauric Research](https://github.com/TauricResearch)[/dim]"
-    )
-
-    # Create and center the welcome box
-    welcome_box = Panel(
-        welcome_content,
-        border_style="green",
-        padding=(1, 2),
-        title="欢迎使用 TradingAgents | Welcome to TradingAgents",
-        subtitle="多智能体大语言模型金融交易框架 | Multi-Agents LLM Financial Trading Framework",
-    )
-    console.print(Align.center(welcome_box))
-    console.print()  # Add a blank line after the welcome box
 
     # Create a boxed questionnaire for each step
     def create_question_box(title, prompt, default=None):
@@ -478,7 +458,7 @@ def get_user_selections():
     )
     selected_analysts = select_analysts()
     console.print(
-        f"[green]已选择的分析师 | Selected analysts:[/green] {', '.join(analyst.value for analyst in selected_analysts)}"
+        f"[green]已选择的分析师 | Selected analysts:[/green] {', '.join(analyst for analyst in selected_analysts)}"
     )
 
     # Step 5: Research depth
@@ -552,6 +532,7 @@ def select_market():
             "data_source": "yahoo_finance"
         }
     }
+    return markets['2']
 
     console.print("\n[bold cyan]请选择股票市场 | Please select stock market:[/bold cyan]")
     for key, market in markets.items():
@@ -579,7 +560,7 @@ def get_ticker(market):
 
     while True:
         ticker = typer.prompt(f"\n请输入{market['name']}股票代码 | Enter {market['name_en']} ticker",
-                             default=market['default'])
+                              default=market['default'])
 
         # 验证股票代码格式
         import re
@@ -871,9 +852,9 @@ def check_api_keys(llm_provider: str) -> bool:
 
     return True
 
-def run_analysis():
+def run_analysis(selections):
     # First get all user selections
-    selections = get_user_selections()
+    # selections = get_user_selections()
 
     # Check API keys before proceeding
     if not check_api_keys(selections["llm_provider"]):
@@ -903,7 +884,7 @@ def run_analysis():
     # Initialize the graph
     try:
         graph = TradingAgentsGraph(
-            [analyst.value for analyst in selections["analysts"]], config=config, debug=True
+            [analyst for analyst in selections["analysts"]], config=config, debug=True
         )
     except Exception as e:
         console.print(f"\n[red]❌ 初始化失败 | Initialization failed: {str(e)}[/red]")
@@ -928,7 +909,7 @@ def run_analysis():
             with open(log_file, "a") as f:
                 f.write(f"{timestamp} [{message_type}] {content}\n")
         return wrapper
-    
+
     def save_tool_call_decorator(obj, func_name):
         func = getattr(obj, func_name)
         @wraps(func)
@@ -971,7 +952,7 @@ def run_analysis():
         )
         message_buffer.add_message(
             "System",
-            f"Selected analysts: {', '.join(analyst.value for analyst in selections['analysts'])}",
+            f"Selected analysts: {', '.join(analyst for analyst in selections['analysts'])}",
         )
         update_display(layout)
 
@@ -986,7 +967,7 @@ def run_analysis():
         message_buffer.final_report = None
 
         # Update agent status to in_progress for the first analyst
-        first_analyst = f"{selections['analysts'][0].value.capitalize()} Analyst"
+        first_analyst = f"{selections['analysts'][0]} Analyst"
         message_buffer.update_agent_status(first_analyst, "in_progress")
         update_display(layout)
 
@@ -1018,7 +999,7 @@ def run_analysis():
                     msg_type = "System"
 
                 # Add message to buffer
-                message_buffer.add_message(msg_type, content)                
+                message_buffer.add_message(msg_type, content)
 
                 # If it's a tool call, add it to tool calls
                 if hasattr(last_message, "tool_calls"):
@@ -1078,8 +1059,8 @@ def run_analysis():
 
                 # Research Team - Handle Investment Debate State
                 if (
-                    "investment_debate_state" in chunk
-                    and chunk["investment_debate_state"]
+                        "investment_debate_state" in chunk
+                        and chunk["investment_debate_state"]
                 ):
                     debate_state = chunk["investment_debate_state"]
 
@@ -1115,8 +1096,8 @@ def run_analysis():
 
                     # Update Research Manager status and final decision
                     if (
-                        "judge_decision" in debate_state
-                        and debate_state["judge_decision"]
+                            "judge_decision" in debate_state
+                            and debate_state["judge_decision"]
                     ):
                         # Keep all research team members in progress until final decision
                         update_research_team_status("in_progress")
@@ -1138,8 +1119,8 @@ def run_analysis():
 
                 # Trading Team
                 if (
-                    "trader_investment_plan" in chunk
-                    and chunk["trader_investment_plan"]
+                        "trader_investment_plan" in chunk
+                        and chunk["trader_investment_plan"]
                 ):
                     message_buffer.update_report_section(
                         "trader_investment_plan", chunk["trader_investment_plan"]
@@ -1153,8 +1134,8 @@ def run_analysis():
 
                     # Update Risky Analyst status and report
                     if (
-                        "current_risky_response" in risk_state
-                        and risk_state["current_risky_response"]
+                            "current_risky_response" in risk_state
+                            and risk_state["current_risky_response"]
                     ):
                         message_buffer.update_agent_status(
                             "Risky Analyst", "in_progress"
@@ -1171,8 +1152,8 @@ def run_analysis():
 
                     # Update Safe Analyst status and report
                     if (
-                        "current_safe_response" in risk_state
-                        and risk_state["current_safe_response"]
+                            "current_safe_response" in risk_state
+                            and risk_state["current_safe_response"]
                     ):
                         message_buffer.update_agent_status(
                             "Safe Analyst", "in_progress"
@@ -1189,8 +1170,8 @@ def run_analysis():
 
                     # Update Neutral Analyst status and report
                     if (
-                        "current_neutral_response" in risk_state
-                        and risk_state["current_neutral_response"]
+                            "current_neutral_response" in risk_state
+                            and risk_state["current_neutral_response"]
                     ):
                         message_buffer.update_agent_status(
                             "Neutral Analyst", "in_progress"
@@ -1261,12 +1242,6 @@ def run_analysis():
     name="analyze",
     help="开始股票分析 | Start stock analysis"
 )
-def analyze():
-    """
-    启动交互式股票分析工具
-    Launch interactive stock analysis tool
-    """
-    run_analysis()
 
 
 @app.command(
@@ -1378,331 +1353,29 @@ def config():
     console.print("• python tests/integration/test_dashscope_integration.py  # 集成测试")
 
 
-@app.command(
-    name="version",
-    help="版本信息 | Version information"
-)
-def version():
-    """
-    显示版本信息
-    Display version information
-    """
-    # 读取版本号
-    try:
-        with open("VERSION", "r") as f:
-            version = f.read().strip()
-    except FileNotFoundError:
-        version = "1.0.0"
 
-    console.print("\n[bold blue]📊 TradingAgents 版本信息 | Version Information[/bold blue]")
-    console.print(f"[green]版本 | Version:[/green] {version} [yellow](预览版 | Preview)[/yellow]")
-    console.print(f"[green]发布日期 | Release Date:[/green] 2025-06-26")
-    console.print(f"[green]框架 | Framework:[/green] 多智能体金融交易分析 | Multi-Agent Financial Trading Analysis")
-    console.print(f"[green]支持的语言 | Languages:[/green] 中文 | English")
-    console.print(f"[green]开发状态 | Development Status:[/green] [yellow]早期预览版，功能持续完善中[/yellow]")
-    console.print(f"[green]基于项目 | Based on:[/green] [blue]TauricResearch/TradingAgents[/blue]")
-    console.print(f"[green]创建目的 | Purpose:[/green] [cyan]更好地在中国推广TradingAgents[/cyan]")
-    console.print(f"[green]主要功能 | Features:[/green]")
-    console.print("  • 🤖 多智能体协作分析 | Multi-agent collaborative analysis")
-    console.print("  • 🇨🇳 阿里百炼大模型支持 | Alibaba DashScope support")
-    console.print("  • 📈 实时股票数据分析 | Real-time stock data analysis")
-    console.print("  • 🧠 智能投资建议 | Intelligent investment recommendations")
-    console.print("  • 🔍 风险评估 | Risk assessment")
-
-    console.print(f"\n[yellow]⚠️  预览版本提醒 | Preview Version Notice:[/yellow]")
-    console.print("  • 这是早期预览版本，功能仍在完善中")
-    console.print("  • 建议仅在测试环境中使用")
-    console.print("  • 投资建议仅供参考，请谨慎决策")
-    console.print("  • 欢迎反馈问题和改进建议")
-
-    console.print(f"\n[blue]🙏 致敬源项目 | Tribute to Original Project:[/blue]")
-    console.print("  • 💎 感谢 Tauric Research 团队提供的珍贵源码")
-    console.print("  • 🔄 感谢持续的维护、更新和改进工作")
-    console.print("  • 🌍 感谢选择Apache 2.0协议的开源精神")
-    console.print("  • 🎯 本项目旨在更好地在中国推广TradingAgents")
-    console.print("  • 🔗 源项目: https://github.com/TauricResearch/TradingAgents")
-
-
-@app.command(
-    name="data-config",
-    help="数据目录配置 | Data directory configuration"
-)
-def data_config(
-    show: bool = typer.Option(False, "--show", "-s", help="显示当前配置 | Show current configuration"),
-    set_dir: Optional[str] = typer.Option(None, "--set", "-d", help="设置数据目录 | Set data directory"),
-    reset: bool = typer.Option(False, "--reset", "-r", help="重置为默认配置 | Reset to default configuration")
-):
-    """
-    配置数据目录路径
-    Configure data directory paths
-    """
-    from tradingagents.config.config_manager import config_manager
-    from tradingagents.dataflows.config import get_data_dir, set_data_dir
-    
-    console.print("\n[bold blue]📁 数据目录配置 | Data Directory Configuration[/bold blue]")
-    
-    if reset:
-        # 重置为默认配置
-        default_data_dir = os.path.join(os.path.expanduser("~"), "Documents", "TradingAgents", "data")
-        set_data_dir(default_data_dir)
-        console.print(f"[green]✅ 已重置数据目录为默认路径: {default_data_dir}[/green]")
-        return
-    
-    if set_dir:
-        # 设置新的数据目录
-        try:
-            set_data_dir(set_dir)
-            console.print(f"[green]✅ 数据目录已设置为: {set_dir}[/green]")
-            
-            # 显示创建的目录结构
-            if os.path.exists(set_dir):
-                console.print("\n[blue]📂 目录结构:[/blue]")
-                for root, dirs, files in os.walk(set_dir):
-                    level = root.replace(set_dir, '').count(os.sep)
-                    if level > 2:  # 限制显示深度
-                        continue
-                    indent = '  ' * level
-                    console.print(f"{indent}📁 {os.path.basename(root)}/")
-        except Exception as e:
-            console.print(f"[red]❌ 设置数据目录失败: {e}[/red]")
-        return
-    
-    # 显示当前配置（默认行为或使用--show）
-    settings = config_manager.load_settings()
-    current_data_dir = get_data_dir()
-    
-    # 配置信息表格
-    config_table = Table(show_header=True, header_style="bold magenta")
-    config_table.add_column("配置项 | Configuration", style="cyan")
-    config_table.add_column("路径 | Path", style="green")
-    config_table.add_column("状态 | Status", style="yellow")
-    
-    directories = {
-        "数据目录 | Data Directory": settings.get("data_dir", "未配置"),
-        "缓存目录 | Cache Directory": settings.get("cache_dir", "未配置"),
-        "结果目录 | Results Directory": settings.get("results_dir", "未配置")
-    }
-    
-    for name, path in directories.items():
-        if path and path != "未配置":
-            status = "✅ 存在" if os.path.exists(path) else "❌ 不存在"
-        else:
-            status = "⚠️ 未配置"
-        config_table.add_row(name, str(path), status)
-    
-    console.print(config_table)
-    
-    # 环境变量信息
-    console.print("\n[blue]🌍 环境变量 | Environment Variables:[/blue]")
-    env_table = Table(show_header=True, header_style="bold magenta")
-    env_table.add_column("环境变量 | Variable", style="cyan")
-    env_table.add_column("值 | Value", style="green")
-    
-    env_vars = {
-        "TRADINGAGENTS_DATA_DIR": os.getenv("TRADINGAGENTS_DATA_DIR", "未设置"),
-        "TRADINGAGENTS_CACHE_DIR": os.getenv("TRADINGAGENTS_CACHE_DIR", "未设置"),
-        "TRADINGAGENTS_RESULTS_DIR": os.getenv("TRADINGAGENTS_RESULTS_DIR", "未设置")
-    }
-    
-    for var, value in env_vars.items():
-        env_table.add_row(var, value)
-    
-    console.print(env_table)
-    
-    # 使用说明
-    console.print("\n[yellow]💡 使用说明 | Usage:[/yellow]")
-    console.print("• 设置数据目录: tradingagents data-config --set /path/to/data")
-    console.print("• 重置为默认: tradingagents data-config --reset")
-    console.print("• 查看当前配置: tradingagents data-config --show")
-    console.print("• 环境变量优先级最高 | Environment variables have highest priority")
-
-
-@app.command(
-    name="examples",
-    help="示例程序 | Example programs"
-)
-def examples():
-    """
-    显示可用的示例程序
-    Display available example programs
-    """
-    console.print("\n[bold blue]📚 TradingAgents 示例程序 | Example Programs[/bold blue]")
-
-    examples_table = Table(show_header=True, header_style="bold magenta")
-    examples_table.add_column("类型 | Type", style="cyan")
-    examples_table.add_column("文件名 | Filename", style="green")
-    examples_table.add_column("说明 | Description")
-
-    examples_table.add_row(
-        "🇨🇳 阿里百炼",
-        "examples/dashscope/demo_dashscope_chinese.py",
-        "中文优化的股票分析演示 | Chinese-optimized stock analysis"
-    )
-    examples_table.add_row(
-        "🇨🇳 阿里百炼",
-        "examples/dashscope/demo_dashscope.py",
-        "完整功能演示 | Full feature demonstration"
-    )
-    examples_table.add_row(
-        "🇨🇳 阿里百炼",
-        "examples/dashscope/demo_dashscope_simple.py",
-        "简化测试版本 | Simplified test version"
-    )
-    examples_table.add_row(
-        "🌍 OpenAI",
-        "examples/openai/demo_openai.py",
-        "OpenAI模型演示 | OpenAI model demonstration"
-    )
-    examples_table.add_row(
-        "🧪 测试",
-        "tests/integration/test_dashscope_integration.py",
-        "集成测试 | Integration test"
-    )
-    examples_table.add_row(
-        "📁 配置演示",
-        "examples/data_dir_config_demo.py",
-        "数据目录配置演示 | Data directory configuration demo"
-    )
-
-    console.print(examples_table)
-
-    console.print("\n[yellow]运行示例 | Run Examples:[/yellow]")
-    console.print("1. 确保已配置API密钥 | Ensure API keys are configured")
-    console.print("2. 选择合适的示例程序运行 | Choose appropriate example to run")
-    console.print("3. 推荐从中文版本开始 | Recommended to start with Chinese version")
-
-
-@app.command(
-    name="test",
-    help="运行测试 | Run tests"
-)
-def test():
-    """
-    运行系统测试
-    Run system tests
-    """
-    console.print("\n[bold blue]🧪 TradingAgents 测试 | Tests[/bold blue]")
-
-    import subprocess
-    import sys
-
-    console.print("[yellow]正在运行集成测试... | Running integration tests...[/yellow]")
-
-    try:
-        result = subprocess.run([
-            sys.executable,
-            "tests/integration/test_dashscope_integration.py"
-        ], capture_output=True, text=True, cwd=".")
-
-        if result.returncode == 0:
-            console.print("[green]✅ 测试通过 | Tests passed[/green]")
-            console.print(result.stdout)
-        else:
-            console.print("[red]❌ 测试失败 | Tests failed[/red]")
-            console.print(result.stderr)
-
-    except Exception as e:
-        console.print(f"[red]❌ 测试执行错误 | Test execution error: {e}[/red]")
-        console.print("\n[yellow]手动运行测试 | Manual test execution:[/yellow]")
-        console.print("python tests/integration/test_dashscope_integration.py")
-
-
-@app.command(
-    name="help",
-    help="中文帮助 | Chinese help"
-)
-def help_chinese():
-    """
-    显示中文帮助信息
-    Display Chinese help information
-    """
-    console.print("\n[bold blue]📖 TradingAgents 中文帮助 | Chinese Help[/bold blue]")
-
-    console.print("\n[bold yellow]🚀 快速开始 | Quick Start:[/bold yellow]")
-    console.print("1. [cyan]python -m cli.main config[/cyan]     # 查看配置信息")
-    console.print("2. [cyan]python -m cli.main examples[/cyan]   # 查看示例程序")
-    console.print("3. [cyan]python -m cli.main test[/cyan]       # 运行测试")
-    console.print("4. [cyan]python -m cli.main analyze[/cyan]    # 开始股票分析")
-
-    console.print("\n[bold yellow]📋 主要命令 | Main Commands:[/bold yellow]")
-
-    commands_table = Table(show_header=True, header_style="bold magenta")
-    commands_table.add_column("命令 | Command", style="cyan")
-    commands_table.add_column("功能 | Function", style="green")
-    commands_table.add_column("说明 | Description")
-
-    commands_table.add_row(
-        "analyze",
-        "股票分析 | Stock Analysis",
-        "启动交互式多智能体股票分析工具"
-    )
-    commands_table.add_row(
-        "config",
-        "配置设置 | Configuration",
-        "查看和配置LLM提供商、API密钥等设置"
-    )
-    commands_table.add_row(
-        "examples",
-        "示例程序 | Examples",
-        "查看可用的演示程序和使用说明"
-    )
-    commands_table.add_row(
-        "test",
-        "运行测试 | Run Tests",
-        "执行系统集成测试，验证功能正常"
-    )
-    commands_table.add_row(
-        "version",
-        "版本信息 | Version",
-        "显示软件版本和功能特性信息"
-    )
-
-    console.print(commands_table)
-
-    console.print("\n[bold yellow]🇨🇳 推荐使用阿里百炼大模型:[/bold yellow]")
-    console.print("• 无需翻墙，网络稳定")
-    console.print("• 中文理解能力强")
-    console.print("• 成本相对较低")
-    console.print("• 符合国内合规要求")
-
-    console.print("\n[bold yellow]📞 获取帮助 | Get Help:[/bold yellow]")
-    console.print("• 项目文档: docs/ 目录")
-    console.print("• 示例程序: examples/ 目录")
-    console.print("• 集成测试: tests/ 目录")
-    console.print("• GitHub: https://github.com/TauricResearch/TradingAgents")
-
-
-def main():
-    """主函数 - 默认进入分析模式"""
-    import sys
-    from difflib import get_close_matches
-
-    # 如果没有参数，直接进入分析模式
-    if len(sys.argv) == 1:
-        run_analysis()
-    else:
-        # 有参数时使用typer处理命令
-        try:
-            app()
-        except SystemExit as e:
-            # 只在退出码为2（typer的未知命令错误）时提供智能建议
-            if e.code == 2 and len(sys.argv) > 1:
-                unknown_command = sys.argv[1]
-                available_commands = ['analyze', 'config', 'version', 'data-config', 'examples', 'test', 'help']
-                
-                # 使用difflib找到最相似的命令
-                suggestions = get_close_matches(unknown_command, available_commands, n=3, cutoff=0.6)
-                
-                if suggestions:
-                    console.print(f"\n[red]❌ 未知命令: '{unknown_command}'[/red]")
-                    console.print(f"[yellow]💡 您是否想要使用以下命令之一？[/yellow]")
-                    for suggestion in suggestions:
-                        console.print(f"   • [cyan]python -m cli.main {suggestion}[/cyan]")
-                    console.print(f"\n[dim]使用 [cyan]python -m cli.main help[/cyan] 查看所有可用命令[/dim]")
-                else:
-                    console.print(f"\n[red]❌ 未知命令: '{unknown_command}'[/red]")
-                    console.print(f"[yellow]使用 [cyan]python -m cli.main help[/cyan] 查看所有可用命令[/yellow]")
-            raise e
 
 if __name__ == "__main__":
-    main()
+    selections = {
+        "ticker": "002015",
+        "market": {
+            "name": "A股",
+            "name_en": "China A-Share",
+            "default": "600036",
+            "examples": [
+                "000001 (平安银行)",
+                "600036 (招商银行)",
+                "000858 (五粮液)"
+            ],
+            "format": "6位数字代码 (如: 600036, 000001)",
+            "data_source": "tongdaxin"
+        },
+        "analysis_date": "2025-07-12",
+        "analysts": [ "market", "social", "news", "fundamentals"],
+        "research_depth": 5,
+        "llm_provider": "阿里百炼 (dashscope)",
+        "backend_url": "https://dashscope.aliyuncs.com/api/v1",
+        "shallow_thinker": "qwen-max",
+        "deep_thinker": "qwen-max"
+    }
+    run_analysis(selections)
